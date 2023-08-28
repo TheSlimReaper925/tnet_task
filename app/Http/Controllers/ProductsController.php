@@ -87,10 +87,21 @@ class ProductsController extends Controller
     public function getCart() {
         $groupCartItems = Cart::with(['groups', 'product'])->whereHas('groups')->where('user_id', Auth::id())->get();
         $cartItems = Cart::with(['product'])->where('user_id', Auth::id())->get();
-
+        $min_quantity = 0;
+        foreach ($groupCartItems as $groupCartItem) {
+            if ($min_quantity == 0 || $min_quantity > $groupCartItem->quantity) {
+                $min_quantity = $groupCartItem->quantity;
+            }
+        }
         $cartCollection = CartResource::collection($groupCartItems);
         $array = collect($cartCollection->toArray([]));
-        $saving = $array->sum('fullPrice') - $array->sum('discountedPrice');
+        $index = 0;
+        $saving = 0;
+        foreach ($groupCartItems as $groupCartItem) {
+            $saving += $min_quantity * $array[$index]["price"] * $array[0]["discount"];
+            $index++;
+        }
+
         return response()->json([
             "products" => CartResourceWithoutDiscount::collection($cartItems)->toArray([]),
             "discount" => $saving
