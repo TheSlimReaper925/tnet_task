@@ -20,8 +20,8 @@ class CartResource extends JsonResource
         return [
             "product_id" => $this->product_id,
             "quantity" => $this->quantity,
-            "price" => $this->product->price,
-            "discountedPrice" => $this->product->price -= $this->product->price * ($this->calculateDiscount() / 100)
+            "fullPrice" => $this->product->price * $this->quantity,
+            "discountedPrice" => $this->product->price * $this->quantity - (($this->product->price * $this->quantity) * ($this->calculateDiscount() / 100))
         ];
     }
 
